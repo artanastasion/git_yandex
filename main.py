@@ -1,18 +1,20 @@
 import sys
+
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QMessageBox
-from PyQt5 import uic
+from main_ui import Ui_Coffee
+from addEditCoffeeForm_ui import Ui_AddEditCoffeeDialog
 
 
-class Coffee(QMainWindow):
+class Coffee(QMainWindow, Ui_Coffee):
     def __init__(self):
         super().__init__()
-        uic.loadUi('main.ui', self)
+        self.setupUi(self)
         self.initUI()
 
     def initUI(self):
         db = QSqlDatabase.addDatabase('QSQLITE')
-        db.setDatabaseName('coffee.sqlite')
+        db.setDatabaseName('data/coffee.sqlite')
         db.open()
 
         self.model = QSqlTableModel(self, db)
@@ -47,10 +49,10 @@ class Coffee(QMainWindow):
             QMessageBox.warning(self, 'Ошибка', 'Выберите запись для редактирования')
 
 
-class AddEditCoffeeDialog(QDialog):
+class AddEditCoffeeDialog(QDialog, Ui_AddEditCoffeeDialog):
     def __init__(self, parent=None, record=None):
         super().__init__(parent)
-        uic.loadUi('addEditCoffeeForm.ui', self)
+        self.setupUi(self)
         self.record = record
         if self.record:
             self.loadRecordData()
@@ -59,12 +61,12 @@ class AddEditCoffeeDialog(QDialog):
         self.cancelButton.clicked.connect(self.reject)
 
     def loadRecordData(self):
-        self.nameEdit.setText(self.record.text('название_сорта'))
-        self.roastEdit.setText(self.record.text('степень_обжарки'))
-        self.groundEdit.setText(self.record.text('молотый_или_в_зернах'))
-        self.descriptionEdit.setText(self.record.text('описание_вкуса'))
-        self.priceEdit.setText(self.record.text('цена'))
-        self.volumeEdit.setText(self.record.text('объем_упаковки'))
+        self.nameEdit.setText(self.record.value('название_сорта'))
+        self.roastEdit.setText(self.record.value('степень_обжарки'))
+        self.groundEdit.setText(self.record.value('молотый_или_в_зернах'))
+        self.descriptionEdit.setText(self.record.value('описание_вкуса'))
+        self.priceEdit.setText(str(self.record.value('цена')))
+        self.volumeEdit.setText(str(self.record.value('объем_упаковки')))
 
     def saveRecord(self):
         name = self.nameEdit.text()
@@ -79,12 +81,12 @@ class AddEditCoffeeDialog(QDialog):
             return
 
         if self.record:
-            self.record.setText('название_сорта', name)
-            self.record.setText('степень_обжарки', roast)
-            self.record.setText('молотый_или_в_зернах', ground)
-            self.record.setText('описание_вкуса', description)
-            self.record.setText('цена', price)
-            self.record.setText('объем_упаковки', volume)
+            self.record.setValue('название_сорта', name)
+            self.record.setValue('степень_обжарки', roast)
+            self.record.setValue('молотый_или_в_зернах', ground)
+            self.record.setValue('описание_вкуса', description)
+            self.record.setValue('цена', price)
+            self.record.setValue('объем_упаковки', volume)
             self.parent().model.setRecord(self.parent().view.currentIndex().row(), self.record)
         else:
             row = self.parent().model.rowCount()
@@ -107,4 +109,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Coffee()
     ex.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
